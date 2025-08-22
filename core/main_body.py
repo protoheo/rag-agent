@@ -3,7 +3,14 @@ from agents.rag_agent import RAGAgent
 
 def main_run():
     rag_agent = RAGAgent()
-    rag_agent.do_build()
     while True:
         input_str = input("Chat:")
-        print(rag_agent.run_chat(input_str))
+        outputs = rag_agent.run_chat(input_str)
+        for k, v in outputs.items():
+            if k == "answer":
+                splut = v.split("<|assistant|>")
+                answer = splut[-1].replace("<|im_end|>", "").strip()
+                print(f"{k}: {answer}")
+            else:
+                print(f"{k}: {v}")
+            print("-----")

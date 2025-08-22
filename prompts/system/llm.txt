@@ -1,2 +1,4 @@
-넌 사용자의 질문에 친절하게 대답해주는 AI야.
-질문:{question}
+<|im_start|><|system|>넌 사용자의 질문에 친절하게 대답해주는 AI야.<|im_end|>
+<|im_start|><|user|>질문: {question}<|im_end|>
+<|im_start|>문서: {context}<|im_end|>
+<|im_start|><|assistant|>

@@ -1,25 +1,25 @@
+from typing import Annotated, Any
+
 from langchain_core.runnables import Runnable
-from typing import Any
 
 
 class MainRouter(Runnable):
     def __init__(self, model_manager):
         self.model_manager = model_manager
 
-    def invoke(self,
-               state: dict,
-               config=None,
-               **kwargs: Any) -> dict:
+    def invoke(
+        self, input: Annotated[dict[Any, Any], "State"], config=None, **kwargs: Any
+    ) -> dict:
         while True:
-            is_shot = self.model_manager.run(state["messages"], shot_mode=True).strip()
+            is_shot = self.model_manager.run(input["messages"], shot_mode=True).strip()
             print("MainRouter Result------->", is_shot)
-            if is_shot.lower().replace(".", "") in ['no', 'yes']:
+            if is_shot.lower().replace(".", "") in ["no", "yes"]:
                 break
 
         if "no" in is_shot.lower():
-            return {"next": "sLLM", "messages": state["messages"]}
+            return {"next": "sLLM", "messages": input["messages"]}
         else:
-            return {"next": "CloudLLM", "messages": state["messages"]}
+            return {"next": "CloudLLM", "messages": input["messages"]}
 
         # 일단은 모델 넣어야되는데 지금은 그냥 단순 분기 생성
 

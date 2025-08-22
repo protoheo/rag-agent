@@ -1,4 +1,4 @@
-from langchain_core.messages import HumanMessage, AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 
 from models.model_manager import ChainManager
 from structs.state_struct import StateStruct
@@ -7,23 +7,22 @@ from structs.state_struct import StateStruct
 class AnswerNode:
     def __init__(self):
         cm = ChainManager()
-        chain = cm.create_chain()
-        self.chain = chain
+        self.chain = cm.create_chain()
 
     # 답변 생성 노드
     def llm_answer(self, state: StateStruct) -> StateStruct:
         # 질문을 상태에서 가져옵니다.
-        latest_question = state["question"]
+        latest_question = state.get("question", "")
 
         # 검색된 문서를 상태에서 가져옵니다.
-        context = state["context"]
+        context = state.get("context", "")
 
         # 체인을 호출하여 답변을 생성합니다.
         response = self.chain.invoke(
             {
                 "question": latest_question,
                 "context": context,
-                "chat_history": messages_to_history(state["messages"]),
+                "chat_history": messages_to_history(state.get("messages", [])),
             }
         )
         # 생성된 답변, (유저의 질문, 답변) 메시지를 상태에 저장합니다.
