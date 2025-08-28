@@ -31,4 +31,3 @@ def format_task(tasks):
 
     # 결과 출력
     return task_time_pairs
-

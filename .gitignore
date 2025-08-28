@@ -1,1 +1,6 @@
 /.env
+cache
+__pycache__
+structs/simple_struct.py
+.gitignore
+playground*

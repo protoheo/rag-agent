@@ -1,38 +1,34 @@
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.storage import LocalFileStore
+from langchain_community.document_loaders import PDFPlumberLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-
-from langchain_community.document_loaders import PDFPlumberLoader
+from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from typing import List
 
 
 class PDFRetrievalChain:
-    def __init__(self):
+    def __init__(self, docs: list[str] = []):
         self.top_k = 3
 
         self.store = "cache"
-
-        self.docs = None
-        self.vectorstore = None
-
-        self.retriever = None
+        self.docs = docs
         self.chain = None
 
-    def load_documents(self, source_uris: List[str]):
+    def load_documents(self, source_uris: list[str]) -> list[Document]:
         docs = []
         for source_uri in source_uris:
             loader = PDFPlumberLoader(source_uri)
             docs.extend(loader.load())
-        self.docs = docs
         return docs
 
-    def split_documents(self, docs, text_splitter):
+    def split_documents(
+        self, docs, text_splitter: RecursiveCharacterTextSplitter
+    ) -> list[Document]:
         """text splitter를 사용하여 문서를 분할합니다."""
         return text_splitter.split_documents(docs)
 
-    def create_text_splitter(self):
+    def create_text_splitter(self) -> RecursiveCharacterTextSplitter:
         return RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=50)
 
     def create_embedding(self):
@@ -40,7 +36,7 @@ class PDFRetrievalChain:
         embedder = "jhgan/ko-sroberta-nli"
         embedding = HuggingFaceEmbeddings(model_name=embedder)
 
-        store_dir = self.store+"/"+embedder
+        store_dir = self.store + "/" + embedder
         store = LocalFileStore(store_dir)
 
         cached_embedder = CacheBackedEmbeddings.from_bytes_store(
@@ -63,15 +59,13 @@ class PDFRetrievalChain:
         return dense_retriever
 
     def build_retriever(self):
-        docs = self.docs
+        docs = self.load_documents(self.docs)
         text_splitter = self.create_text_splitter()
         split_docs = self.split_documents(docs, text_splitter)
 
-        self.vectorstore = self.create_vectorstore(split_docs)
-        self.retriever = self.create_retriever(self.vectorstore)
+        vectorstore = self.create_vectorstore(split_docs)
+        retriever = self.create_retriever(vectorstore)
+        return retriever
 
     def build_chain(self):
-        if self.retriever is None:
-            self.build_retriever()
-
-
+        self.chain = self.build_retriever()
